@@ -1,0 +1,2 @@
+defmodule NewsIngester do
+end
