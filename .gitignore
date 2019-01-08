@@ -22,6 +22,9 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 news_ingester-*.tar
 
-# IDE specific files
+# Ignore secret configs
+*secret.exs
+
+# Ignore IDE specific files
 /.idea/
 *.iml
