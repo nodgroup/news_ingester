@@ -29,5 +29,9 @@ use Mix.Config
 #
 #     import_config "#{Mix.env()}.exs"
 
+config :news_ingester,
+  a_a_base_endpoint: "https://api.aa.com.tr/",
+  a_a_search_endpoint: "abone/search"
+
 import_config("#{Mix.env()}.exs")
 import_config("secret.exs")
