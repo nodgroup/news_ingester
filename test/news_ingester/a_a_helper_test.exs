@@ -7,7 +7,7 @@ defmodule NewsIngester.AAHelperTest do
   end
 
   test "should generate filter" do
-    result = NewsIngester.AAHelper.generate_filter()
+    result = NewsIngester.AAHelper.generate_search_filter()
     assert is_list(result) == true
   end
 end
