@@ -26,7 +26,11 @@ defmodule NewsIngester.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
 
       # code analysis tool
-      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      # dynamodb connector
+      {:ex_aws_dynamo, "~> 2.0"},
+      # graphql client
+      {:neuron, "~> 1.1.0"}
     ]
   end
 end
