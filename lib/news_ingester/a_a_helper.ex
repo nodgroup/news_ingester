@@ -9,7 +9,7 @@ defmodule NewsIngester.AAHelper do
     password = NewsIngester.get_config(:api_password)
 
     if is_bitstring(username) && is_bitstring(password) do
-      [Authorization: "Basic " <> Base.encode64("#{username}:#{password}}}")]
+      [Authorization: "Basic " <> Base.encode64("#{username}:#{password}")]
     end
   end
 
