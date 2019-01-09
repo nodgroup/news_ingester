@@ -29,9 +29,5 @@ use Mix.Config
 #
 #     import_config "#{Mix.env()}.exs"
 
-# placeholder configs for tests, get overridden when we import secret config
-config :news_ingester, api_username: "placeholder"
-config :news_ingester, api_password: "placeholder"
-config :news_ingester, test: "value"
-
+import_config("#{Mix.env()}.exs")
 import_config("secret.exs")

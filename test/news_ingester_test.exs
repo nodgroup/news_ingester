@@ -3,7 +3,7 @@ defmodule NewsIngesterTest do
   doctest NewsIngester
 
   test "get test value from config" do
-    assert NewsIngester.get_config(:test) == "value"
+    assert NewsIngester.get_config(:key) == "value"
   end
 
   test "should generate http basic auth header" do
