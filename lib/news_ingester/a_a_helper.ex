@@ -12,4 +12,13 @@ defmodule NewsIngester.AAHelper do
       [Authorization: "Basic " <> Base.encode64("#{username}:#{password}}}")]
     end
   end
+
+  @doc """
+  Generates filter from config
+  """
+  def generate_filter do
+    # lets start by setting a high limit, since we'll do time based filtering
+    # it'll also make sure we don't miss anything when we restart the application after a long idle period
+    filter = ["limit", "100000"]
+  end
 end

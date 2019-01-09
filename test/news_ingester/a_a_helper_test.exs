@@ -5,4 +5,9 @@ defmodule NewsIngester.AAHelperTest do
     result = NewsIngester.AAHelper.generate_auth_header()
     assert is_list(result) == true
   end
+
+  test "should generate filter" do
+    result = NewsIngester.AAHelper.generate_filter()
+    assert is_list(result) == true
+  end
 end
