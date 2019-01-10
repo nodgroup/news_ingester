@@ -18,6 +18,6 @@ defmodule NewsIngester.AAHelperTest do
 
   test "should not generate url" do
     result = NewsIngester.AAHelper.generate_url(:invalid_key)
-    assert result == nil
+    assert result == "Could not generate url"
   end
 end

@@ -10,6 +10,8 @@ defmodule NewsIngester.AAHelper do
 
     if is_bitstring(username) && is_bitstring(password) do
       [Authorization: "Basic " <> Base.encode64("#{username}:#{password}")]
+    else
+      "Could not generate auth header"
     end
   end
 
@@ -33,6 +35,8 @@ defmodule NewsIngester.AAHelper do
       base
       |> URI.merge(path)
       |> URI.to_string()
+    else
+      "Could not generate url"
     end
   end
 end
