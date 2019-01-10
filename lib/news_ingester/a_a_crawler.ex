@@ -28,12 +28,10 @@ defmodule NewsIngester.AACrawler do
   end
 
   def handle_call(:search, _from, state) do
-    endpoint =
-      NewsIngester.get_config(:a_a_base_endpoint) <> NewsIngester.get_config(:a_a_search_endpoint)
-
+    url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
     filter = NewsIngester.AAHelper.generate_search_filter()
     header = NewsIngester.AAHelper.generate_auth_header()
-    response = HTTPoison.post(endpoint, filter, header)
+    response = HTTPoison.post(url, filter, header)
     {:reply, response, state}
   end
 

@@ -21,4 +21,18 @@ defmodule NewsIngester.AAHelper do
     # it'll also make sure we don't miss anything when we restart the application after a long idle period
     ["limit", "100000"]
   end
+
+  @doc """
+  Generates url from config and parameters
+  """
+  def generate_url(key) do
+    base = NewsIngester.get_config(:a_a_base_url)
+    path = NewsIngester.get_config(key)
+
+    if is_bitstring(base) && is_bitstring(path) do
+      base
+      |> URI.merge(path)
+      |> URI.to_string()
+    end
+  end
 end
