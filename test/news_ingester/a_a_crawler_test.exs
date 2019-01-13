@@ -1,9 +1,13 @@
 defmodule NewsIngester.AACrawlerTest do
   use ExUnit.Case
 
-  test "should get search results" do
+  setup do
     server = start_supervised!(NewsIngester.AACrawler)
+    %{server: server}
+  end
+
+  test "should get search results", %{server: server} do
     result = NewsIngester.AACrawler.search(server)
-    assert is_tuple(result)
+    assert is_list(result)
   end
 end

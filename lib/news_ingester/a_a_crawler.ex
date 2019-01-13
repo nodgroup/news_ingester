@@ -31,8 +31,21 @@ defmodule NewsIngester.AACrawler do
     url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
     filter = NewsIngester.AAHelper.generate_search_filter()
     header = NewsIngester.AAHelper.generate_auth_header()
-    response = HTTPoison.post(url, filter, header)
-    {:reply, response, state}
+    {:ok, response} = HTTPoison.post(url, filter, header)
+
+    {:ok, body} =
+      response.body
+      |> Poison.Parser.parse()
+
+    if body["response"]["success"] == false do
+      {:reply, :error, state}
+    else
+      result =
+        body["data"]["result"]
+        |> Enum.map(fn r -> r["id"] end)
+
+      {:reply, result, state}
+    end
   end
 
   @doc """

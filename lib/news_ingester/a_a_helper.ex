@@ -34,7 +34,7 @@ defmodule NewsIngester.AAHelper do
     if is_bitstring(base) && is_bitstring(path) do
       base
       |> URI.merge(path)
-      |> URI.to_string()
+      |> to_string()
     else
       "Could not generate url"
     end
