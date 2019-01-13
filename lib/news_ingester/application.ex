@@ -10,7 +10,8 @@ defmodule NewsIngester.Application do
     children = [
       # Starts a worker by calling: NewsIngester.Worker.start_link(arg)
       # {NewsIngester.Worker, arg},
-      {NewsIngester.AACrawler, name: NewsIngester.AACrawler}
+      {NewsIngester.AACrawler, name: NewsIngester.AACrawler},
+      {Task, fn -> NewsIngester.AACrawler.crawl() end},
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

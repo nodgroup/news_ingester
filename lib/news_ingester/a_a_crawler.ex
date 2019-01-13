@@ -2,6 +2,13 @@ defmodule NewsIngester.AACrawler do
   use GenServer
   @moduledoc false
 
+  @doc """
+  Crawler logic
+  """
+  def crawl() do
+    _search_results = search(NewsIngester.AACrawler)
+  end
+
   ## Client API
 
   @doc """
