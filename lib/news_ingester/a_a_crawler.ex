@@ -48,8 +48,21 @@ defmodule NewsIngester.AACrawler do
       {:reply, :error, state}
     else
       result =
-        body["data"]["result"]
-        |> Enum.map(fn r -> r["id"] end)
+        Enum.reduce(
+          body["data"]["result"],
+          %{},
+          fn result, acc ->
+            title = String.trim(result["title"])
+            id = [result["id"]]
+            value = Map.get(acc, title)
+
+            if value == nil do
+              Map.put(acc, title, id)
+            else
+              Map.put(acc, title, value ++ id)
+            end
+          end
+        )
 
       {:reply, result, state}
     end

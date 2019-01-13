@@ -8,6 +8,6 @@ defmodule NewsIngester.AACrawlerTest do
 
   test "should get search results", %{server: server} do
     result = NewsIngester.AACrawler.search(server)
-    assert is_list(result)
+    assert is_map(result)
   end
 end
