@@ -31,7 +31,9 @@ use Mix.Config
 
 config :news_ingester,
   a_a_base_url: "https://api.aa.com.tr/abone/",
-  a_a_search_path: "search"
+  a_a_search_path: "search",
+  a_a_picture_path: "document",
+  a_a_picture_quality: "web"
 
 import_config("#{Mix.env()}.exs")
 import_config("secret.exs")

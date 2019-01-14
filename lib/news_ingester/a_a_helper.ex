@@ -39,4 +39,28 @@ defmodule NewsIngester.AAHelper do
       "Could not generate url"
     end
   end
+
+  @doc """
+  Generates url with quality parameter
+  """
+  def generate_url(key, id, quality) do
+    base = generate_url(key)
+    quality = "/" <> id <> "/" <> NewsIngester.get_config(quality)
+
+    if is_bitstring(base) && is_bitstring(quality) do
+      base <> quality
+    else
+      "Could not generate url"
+    end
+  end
+
+  @doc """
+  Gets picture from AA
+  """
+  def get_picture(id) do
+    url = NewsIngester.AAHelper.generate_url(:a_a_picture_path, id, :a_a_picture_quality)
+    header = NewsIngester.AAHelper.generate_auth_header()
+
+    {:ok, response} = HTTPoison.get(url, header)
+  end
 end
