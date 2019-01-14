@@ -6,7 +6,11 @@ defmodule NewsIngester.AACrawler do
   Crawler logic
   """
   def crawl() do
-    _search_results = search(NewsIngester.AACrawler)
+    server = NewsIngester.AACrawler
+    results = search(server)
+
+    results
+    |> Enum.each(fn result -> process_results(server, result) end)
   end
 
   ## Client API
@@ -23,6 +27,13 @@ defmodule NewsIngester.AACrawler do
   """
   def search(server) do
     GenServer.call(server, :search)
+  end
+
+  @doc """
+  Processes crawler results
+  """
+  def process_results(server, element) do
+    GenServer.cast(server, {:process_results, element})
   end
 
   ## Server Callbacks
