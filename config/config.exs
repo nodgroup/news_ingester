@@ -30,6 +30,8 @@ use Mix.Config
 #     import_config "#{Mix.env()}.exs"
 
 config :news_ingester,
+  # wait time between each crawl request / in seconds
+  a_a_crawl_timer: 600,
   a_a_base_url: "https://api.aa.com.tr/abone/",
   a_a_search_path: "search",
   a_a_document_path: "document",

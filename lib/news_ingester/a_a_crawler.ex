@@ -14,6 +14,9 @@ defmodule NewsIngester.AACrawler do
 
     results
     |> Enum.each(fn result -> process_results(server, result) end)
+
+    :timer.sleep(1_000 * 60 * NewsIngester.get_config(:a_a_crawl_timer))
+    crawl()
   end
 
   @doc """
@@ -51,8 +54,8 @@ defmodule NewsIngester.AACrawler do
     :timer.sleep(500)
 
     url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
-    filter = NewsIngester.AAHelper.generate_search_filter()
     header = NewsIngester.AAHelper.generate_auth_header()
+    filter = NewsIngester.AAHelper.generate_search_filter()
     {:ok, response} = HTTPoison.post(url, filter, header)
 
     {:ok, body} =

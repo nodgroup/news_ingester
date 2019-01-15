@@ -22,7 +22,36 @@ defmodule NewsIngester.AAHelper do
   def generate_search_filter do
     # lets start by setting a high limit, since we'll do time based filtering
     # it'll also make sure we don't miss anything when we restart the application after a long idle period
-    ["limit", "100000"]
+    multipart = {:multipart}
+    filter = []
+
+    filter = filter ++ [{"start_date", get_last_crawled()}]
+
+    ExAws.Dynamo.put_item(
+      "a_a_crawler",
+      %{
+        key: "last_crawled",
+        value: DateTime.to_iso8601(DateTime.truncate(DateTime.utc_now(), :second))
+      }
+    )
+    |> ExAws.request()
+
+    Tuple.append(multipart, filter)
+  end
+
+  @doc """
+  Gets last crawled for start date filter from dynamodb
+  """
+  def get_last_crawled do
+    last_crawled =
+      ExAws.Dynamo.get_item("a_a_crawler", %{key: "last_crawled"})
+      |> ExAws.request!()
+
+    if last_crawled == nil do
+      "*"
+    else
+      last_crawled["Item"]["value"]["S"]
+    end
   end
 
   @doc """
