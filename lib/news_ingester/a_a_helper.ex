@@ -88,6 +88,9 @@ defmodule NewsIngester.AAHelper do
       "video" ->
         "video"
 
+      "text" ->
+        "xml"
+
       _ ->
         Logger.error("Could not generate expected content type for: #{type}}")
         nil

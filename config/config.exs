@@ -35,6 +35,7 @@ config :news_ingester,
   a_a_document_path: "document",
   a_a_picture_quality: "web",
   a_a_video_quality: "web",
+  a_a_text_type: "newsml29",
   # AA doesn't return reply after header with 429
   a_a_429_wait_time: 10
 

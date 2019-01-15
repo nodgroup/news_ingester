@@ -3,6 +3,8 @@ defmodule NewsIngester.AACrawler do
   require Logger
   @moduledoc false
 
+  ## Client API
+
   @doc """
   Crawler logic
   """
@@ -13,8 +15,6 @@ defmodule NewsIngester.AACrawler do
     results
     |> Enum.each(fn result -> process_results(server, result) end)
   end
-
-  ## Client API
 
   @doc """
   Starts GenServer
@@ -106,6 +106,9 @@ defmodule NewsIngester.AACrawler do
         "video" ->
           get_document(e, type)
 
+        "text" ->
+          get_document(e, type)
+
         _ ->
           Logger.error("Type not recognized: #{type}")
           nil
@@ -149,7 +152,8 @@ defmodule NewsIngester.AACrawler do
         response
 
       true ->
-        Logger.error("Could not get document: #{id}/#{type}")
+        Logger.error("Could not get document: #{id}")
+        Logger.error("#{response.body}/#{response.status_code}")
         nil
     end
   end
