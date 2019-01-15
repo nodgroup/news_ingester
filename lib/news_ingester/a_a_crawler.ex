@@ -47,6 +47,9 @@ defmodule NewsIngester.AACrawler do
   end
 
   def handle_call(:search, _from, state) do
+    # AA requires 500 ms wait time between each request
+    :timer.sleep(500)
+
     url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
     filter = NewsIngester.AAHelper.generate_search_filter()
     header = NewsIngester.AAHelper.generate_auth_header()
@@ -123,13 +126,13 @@ defmodule NewsIngester.AACrawler do
   Gets document from AA
   """
   def get_document(id, type) do
+    # AA requires 500 ms wait time between each request
+    :timer.sleep(500)
+
     expected_content_type = NewsIngester.AAHelper.get_expected_content_type(type)
 
     url = NewsIngester.AAHelper.generate_url(:a_a_document_path, id, type)
     header = NewsIngester.AAHelper.generate_auth_header()
-
-    # AA requires 500 ms wait time between each request
-    :timer.sleep(500)
 
     {:ok, response} = HTTPoison.get(url, header)
     response_headers = Enum.into(response.headers, %{})
