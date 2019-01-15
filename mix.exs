@@ -30,7 +30,9 @@ defmodule NewsIngester.MixProject do
       # dynamodb connector
       {:ex_aws_dynamo, "~> 2.0"},
       # graphql client
-      {:neuron, "~> 1.1.0"}
+      {:neuron, "~> 1.1.0"},
+      # for logging to file
+      {:logger_file_backend, "~> 0.0.10"}
     ]
   end
 end
