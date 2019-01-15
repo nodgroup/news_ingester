@@ -18,6 +18,7 @@ defmodule NewsIngester.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: NewsIngester.Supervisor]
     app = Supervisor.start_link(children, opts)
+    NewsIngester.create_table("a_a_crawler", :key, :string)
     Task.Supervisor.start_child(Task.Supervisor, fn -> NewsIngester.AACrawler.crawl() end)
     app
   end
