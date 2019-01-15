@@ -11,5 +11,5 @@ config :logger,
 
 # configuration for the {LoggerFileBackend, :debug_log} backend
 config :logger, :debug_log,
-  path: "debug.log",
+  path: "test.log",
   level: :debug

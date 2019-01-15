@@ -6,5 +6,5 @@ config :logger,
 
 # configuration for the {LoggerFileBackend, :info_log} backend
 config :logger, :info_log,
-  path: "info.log",
+  path: "prod.log",
   level: :info
