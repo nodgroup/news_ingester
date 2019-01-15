@@ -1,4 +1,5 @@
 defmodule NewsIngester.AAHelper do
+  require Logger
   @moduledoc false
 
   @doc """
@@ -36,31 +37,60 @@ defmodule NewsIngester.AAHelper do
       |> URI.merge(path)
       |> to_string()
     else
-      "Could not generate url"
+      Logger.error("Could not generate url for: #{key}")
+      nil
     end
   end
 
   @doc """
-  Generates url with quality parameter
+  Generates document url from config
   """
-  def generate_url(key, id, quality) do
+  def generate_url(key, id, type) do
     base = generate_url(key)
-    quality = "/" <> id <> "/" <> NewsIngester.get_config(quality)
+    path = "/#{id}/#{get_quality(type)}"
 
-    if is_bitstring(base) && is_bitstring(quality) do
-      base <> quality
+    if is_bitstring(base) do
+      "#{base}#{path}"
     else
-      "Could not generate url"
+      Logger.error("Could not generate url for: #{key}/#{id}/#{type}")
+      nil
     end
   end
 
   @doc """
-  Gets picture from AA
+  Gets quality from config for appropriate content type
   """
-  def get_picture(id) do
-    url = NewsIngester.AAHelper.generate_url(:a_a_picture_path, id, :a_a_picture_quality)
-    header = NewsIngester.AAHelper.generate_auth_header()
+  def get_quality(type) do
+    case type do
+      "picture" ->
+        NewsIngester.get_config(:a_a_picture_quality)
 
-    {:ok, response} = HTTPoison.get(url, header)
+      "video" ->
+        NewsIngester.get_config(:a_a_video_quality)
+
+      "text" ->
+        NewsIngester.get_config(:a_a_text_type)
+
+      _ ->
+        Logger.error("Could not get quality for: #{type}")
+        nil
+    end
+  end
+
+  @doc """
+  Get expected content type
+  """
+  def get_expected_content_type(type) do
+    case type do
+      "picture" ->
+        "image"
+
+      "video" ->
+        "video"
+
+      _ ->
+        Logger.error("Could not generate expected content type for: #{type}}")
+        nil
+    end
   end
 end

@@ -1,11 +1,12 @@
 defmodule NewsIngester.AACrawler do
   use GenServer
+  require Logger
   @moduledoc false
 
   @doc """
   Crawler logic
   """
-  def crawl() do
+  def crawl do
     server = NewsIngester.AACrawler
     results = search(server)
 
@@ -86,10 +87,67 @@ defmodule NewsIngester.AACrawler do
     {:reply, :ok, state}
   end
 
+  def handle_cast({:process_results, element}, state) do
+    _title = elem(element, 0)
+    id = elem(element, 1)
+
+    id
+    |> Enum.each(fn e ->
+      props = String.split(e, ":")
+      type = Enum.at(props, 1)
+
+      case type do
+        "picture" ->
+          get_document(e, type)
+
+        "video" ->
+          get_document(e, type)
+
+        _ ->
+          Logger.error("Type not recognized: #{type}")
+          nil
+      end
+    end)
+
+    {:noreply, state}
+  end
+
   @doc """
   Default fallback for casts
   """
   def handle_cast(_msg, state) do
     {:noreply, state}
+  end
+
+  @doc """
+  Gets document from AA
+  """
+  def get_document(id, type) do
+    expected_content_type = NewsIngester.AAHelper.get_expected_content_type(type)
+
+    url = NewsIngester.AAHelper.generate_url(:a_a_document_path, id, type)
+    header = NewsIngester.AAHelper.generate_auth_header()
+
+    # AA requires 500 ms wait time between each request
+    :timer.sleep(500)
+
+    {:ok, response} = HTTPoison.get(url, header)
+    response_headers = Enum.into(response.headers, %{})
+    content_type = response_headers["Content-Type"]
+
+    cond do
+      response.status_code == 429 ->
+        # TODO need better handling here to avoid lockout
+        # :timer.sleep(1_000 * NewsIngester.get_config(:a_a_429_wait_time))
+        # get_document(id, type)
+        nil
+
+      String.contains?(content_type, expected_content_type) ->
+        response
+
+      true ->
+        Logger.error("Could not get document: #{id}/#{type}")
+        nil
+    end
   end
 end
