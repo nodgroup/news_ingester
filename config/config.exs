@@ -32,8 +32,11 @@ use Mix.Config
 config :news_ingester,
   a_a_base_url: "https://api.aa.com.tr/abone/",
   a_a_search_path: "search",
-  a_a_picture_path: "document",
-  a_a_picture_quality: "web"
+  a_a_document_path: "document",
+  a_a_picture_quality: "web",
+  a_a_video_quality: "web",
+  # AA doesn't return reply after header with 429
+  a_a_429_wait_time: 10
 
 import_config("#{Mix.env()}.exs")
 import_config("secret.exs")
