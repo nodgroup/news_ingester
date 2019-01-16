@@ -8,7 +8,7 @@ defmodule NewsIngester.AAHelperTest do
 
   test "should generate filter" do
     result = NewsIngester.AAHelper.generate_search_filter()
-    assert is_list(result) == true
+    assert is_tuple(result) == true
   end
 
   test "should generate url" do
