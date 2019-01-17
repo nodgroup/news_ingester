@@ -10,7 +10,7 @@ defmodule NewsIngester.AACrawler do
   """
   def crawl do
     server = NewsIngester.AACrawler
-    results = search(server)
+    results = search(server, false)
 
     results
     |> Enum.each(fn result -> process_results(server, result) end)
@@ -29,8 +29,8 @@ defmodule NewsIngester.AACrawler do
   @doc """
   Searches news and parses results
   """
-  def search(server) do
-    GenServer.call(server, :search)
+  def search(server, is_test) do
+    GenServer.call(server, {:search, is_test})
   end
 
   @doc """
@@ -49,13 +49,13 @@ defmodule NewsIngester.AACrawler do
     {:ok, %{}}
   end
 
-  def handle_call(:search, _from, state) do
+  def handle_call({:search, is_test}, _from, state) do
     # AA requires 500 ms wait time between each request
     :timer.sleep(500)
 
     url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
     header = NewsIngester.AAHelper.generate_auth_header()
-    filter = NewsIngester.AAHelper.generate_search_filter()
+    filter = NewsIngester.AAHelper.generate_search_filter(is_test)
     {:ok, response} = HTTPoison.post(url, filter, header)
 
     {:ok, body} =

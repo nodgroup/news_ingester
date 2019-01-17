@@ -7,12 +7,12 @@ defmodule NewsIngester.AACrawlerTest do
   end
 
   test "should get search results", %{server: server} do
-    result = NewsIngester.AACrawler.search(server)
+    result = NewsIngester.AACrawler.search(server, true)
     assert is_map(result)
   end
 
   test "should get picture", %{server: server} do
-    result = NewsIngester.AACrawler.search(server)
+    result = NewsIngester.AACrawler.search(server, true)
 
     id =
       result

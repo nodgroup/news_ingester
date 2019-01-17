@@ -19,24 +19,28 @@ defmodule NewsIngester.AAHelper do
   @doc """
   Generates search filter from config
   """
-  def generate_search_filter do
-    # lets start by setting a high limit, since we'll do time based filtering
-    # it'll also make sure we don't miss anything when we restart the application after a long idle period
-    multipart = {:multipart}
-    filter = []
+  def generate_search_filter(is_test) do
+    if is_test do
+      {:multipart, [{"limit", "100000"}]}
+    else
+      # lets start by setting a high limit, since we'll do time based filtering
+      # it'll also make sure we don't miss anything when we restart the application after a long idle period
+      multipart = {:multipart}
+      filter = [{"limit", "100000"}]
 
-    filter = filter ++ [{"start_date", get_last_crawled()}]
+      filter = filter ++ [{"start_date", get_last_crawled()}]
 
-    ExAws.Dynamo.put_item(
-      "a_a_crawler",
-      %{
-        key: "last_crawled",
-        value: DateTime.to_iso8601(DateTime.truncate(DateTime.utc_now(), :second))
-      }
-    )
-    |> ExAws.request()
+      ExAws.Dynamo.put_item(
+        "a_a_crawler",
+        %{
+          key: "last_crawled",
+          value: DateTime.to_iso8601(DateTime.truncate(DateTime.utc_now(), :second))
+        }
+      )
+      |> ExAws.request()
 
-    Tuple.append(multipart, filter)
+      Tuple.append(multipart, filter)
+    end
   end
 
   @doc """
@@ -47,7 +51,7 @@ defmodule NewsIngester.AAHelper do
       ExAws.Dynamo.get_item("a_a_crawler", %{key: "last_crawled"})
       |> ExAws.request!()
 
-    if last_crawled == nil do
+    if map_size(last_crawled) == 0 do
       "*"
     else
       last_crawled["Item"]["value"]["S"]

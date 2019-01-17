@@ -41,5 +41,15 @@ config :news_ingester,
   # AA doesn't return reply after header with 429
   a_a_429_wait_time: 10
 
+# for dev and test, edit prod.exs for prod values
+config :ex_aws,
+       :dynamodb,
+       access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+       secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+       scheme: "http://",
+       host: "localhost",
+       port: 8000,
+       region: "us-east-1"
+
 import_config("#{Mix.env()}.exs")
 import_config("secret.exs")
