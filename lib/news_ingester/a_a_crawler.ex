@@ -56,7 +56,7 @@ defmodule NewsIngester.AACrawler do
 
     url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
     header = NewsIngester.AAHelper.generate_auth_header()
-    filter = NewsIngester.AAHelper.generate_search_filter(true)
+    filter = NewsIngester.AAHelper.generate_search_filter(is_test)
     {:ok, response} = HTTPoison.post(url, filter, header)
 
     {:ok, body} =
