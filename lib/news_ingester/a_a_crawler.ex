@@ -101,63 +101,63 @@ defmodule NewsIngester.AACrawler do
     results =
       ids
       |> Enum.reduce(
-           %{},
-           fn e, acc ->
-             props = String.split(e, ":")
-             type = Enum.at(props, 1)
+        %{},
+        fn e, acc ->
+          props = String.split(e, ":")
+          type = Enum.at(props, 1)
 
-             case type do
-               "picture" ->
-                 get_document_body(e, type)
-                 %{}
+          case type do
+            "picture" ->
+              get_document_body(e, type)
+              %{}
 
-               "video" ->
-                 get_document_body(e, type)
-                 %{}
+            "video" ->
+              get_document_body(e, type)
+              %{}
 
-               "text" ->
-                 result = get_document_body(e, type)
+            "text" ->
+              result = get_document_body(e, type)
 
-                 Map.merge(
-                   acc,
-                   %{
-                     "summary" =>
-                       result
-                       |> xpath(~x"//abstract/text()"S),
-                     "content" =>
-                       result
-                       |> xpath(~x"//body.content/text()"S),
-                     "author" =>
-                       result
-                       |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
-                     "publisher" =>
-                       result
-                       |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
-                     "categories" =>
-                       result
-                       |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
-                     "keywords" =>
-                       result
-                       |> xpath(~x"//keyword/text()"Sl),
-                     "city" =>
-                       result
-                       |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
-                     "country" =>
-                       result
-                       |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
-                     "content_created_at" =>
-                       result
-                       |> xpath(~x"//contentCreated/text()"S),
-                     "id_at_source" => e
-                   }
-                 )
+              Map.merge(
+                acc,
+                %{
+                  "summary" =>
+                    result
+                    |> xpath(~x"//abstract/text()"S),
+                  "content" =>
+                    result
+                    |> xpath(~x"//body.content/text()"S),
+                  "author" =>
+                    result
+                    |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
+                  "publisher" =>
+                    result
+                    |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
+                  "categories" =>
+                    result
+                    |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
+                  "keywords" =>
+                    result
+                    |> xpath(~x"//keyword/text()"Sl),
+                  "city" =>
+                    result
+                    |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
+                  "country" =>
+                    result
+                    |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
+                  "content_created_at" =>
+                    result
+                    |> xpath(~x"//contentCreated/text()"S),
+                  "id_at_source" => e
+                }
+              )
 
-               _ ->
-                 Logger.error("Type not recognized: #{type}")
-                 nil
-             end
-           end
-         )
+            _ ->
+              Logger.error("Type not recognized: #{type}")
+              nil
+          end
+        end
+      )
 
     Map.put(results, "title", title)
 
@@ -207,6 +207,7 @@ defmodule NewsIngester.AACrawler do
 
   def get_document_body(id, type) do
     document = get_document(id, type)
+
     if document == nil do
       nil
     else
