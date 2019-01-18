@@ -30,6 +30,8 @@ use Mix.Config
 #     import_config "#{Mix.env()}.exs"
 
 config :news_ingester,
+  api_username: System.get_env("API_USERNAME"),
+  api_password: System.get_env("API_PASSWORD"),
   # wait time between each crawl request / in seconds
   a_a_crawl_timer: 600,
   a_a_base_url: "https://api.aa.com.tr/abone/",
@@ -37,9 +39,7 @@ config :news_ingester,
   a_a_document_path: "document",
   a_a_picture_quality: "web",
   a_a_video_quality: "web",
-  a_a_text_type: "newsml29",
-  # AA doesn't return reply after header with 429
-  a_a_429_wait_time: 10
+  a_a_text_type: "newsml29"
 
 # for dev and test, edit prod.exs for prod values
 config :ex_aws,
@@ -52,4 +52,3 @@ config :ex_aws,
        region: "us-east-1"
 
 import_config("#{Mix.env()}.exs")
-import_config("secret.exs")
