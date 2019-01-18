@@ -32,6 +32,8 @@ defmodule NewsIngester.MixProject do
       {:ex_aws_dynamo, "~> 2.0"},
       # graphql client
       {:neuron, "~> 1.1.0"},
+      # :xmerl wrapper for parsing xml
+      {:sweet_xml, "~> 0.6.5"},
       # for logging to file
       {:logger_file_backend, "~> 0.0.10"}
     ]

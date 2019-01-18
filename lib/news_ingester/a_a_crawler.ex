@@ -1,6 +1,7 @@
 defmodule NewsIngester.AACrawler do
   use GenServer
   require Logger
+  import SweetXml
   @moduledoc false
 
   ## Client API
@@ -55,7 +56,7 @@ defmodule NewsIngester.AACrawler do
 
     url = NewsIngester.AAHelper.generate_url(:a_a_search_path)
     header = NewsIngester.AAHelper.generate_auth_header()
-    filter = NewsIngester.AAHelper.generate_search_filter(is_test)
+    filter = NewsIngester.AAHelper.generate_search_filter(true)
     {:ok, response} = HTTPoison.post(url, filter, header)
 
     {:ok, body} =
@@ -94,29 +95,71 @@ defmodule NewsIngester.AACrawler do
   end
 
   def handle_cast({:process_results, element}, state) do
-    _title = elem(element, 0)
-    id = elem(element, 1)
+    title = elem(element, 0)
+    ids = elem(element, 1)
 
-    id
-    |> Enum.each(fn e ->
-      props = String.split(e, ":")
-      type = Enum.at(props, 1)
+    results =
+      ids
+      |> Enum.reduce(
+           %{},
+           fn e, acc ->
+             props = String.split(e, ":")
+             type = Enum.at(props, 1)
 
-      case type do
-        "picture" ->
-          get_document(e, type)
+             case type do
+               "picture" ->
+                 get_document_body(e, type)
+                 %{}
 
-        "video" ->
-          get_document(e, type)
+               "video" ->
+                 get_document_body(e, type)
+                 %{}
 
-        "text" ->
-          get_document(e, type)
+               "text" ->
+                 result = get_document_body(e, type)
 
-        _ ->
-          Logger.error("Type not recognized: #{type}")
-          nil
-      end
-    end)
+                 Map.merge(
+                   acc,
+                   %{
+                     "summary" =>
+                       result
+                       |> xpath(~x"//abstract/text()"S),
+                     "content" =>
+                       result
+                       |> xpath(~x"//body.content/text()"S),
+                     "author" =>
+                       result
+                       |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
+                     "publisher" =>
+                       result
+                       |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
+                     "categories" =>
+                       result
+                       |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
+                     "keywords" =>
+                       result
+                       |> xpath(~x"//keyword/text()"Sl),
+                     "city" =>
+                       result
+                       |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
+                     "country" =>
+                       result
+                       |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
+                     "content_created_at" =>
+                       result
+                       |> xpath(~x"//contentCreated/text()"S),
+                     "id_at_source" => e
+                   }
+                 )
+
+               _ ->
+                 Logger.error("Type not recognized: #{type}")
+                 nil
+             end
+           end
+         )
+
+    Map.put(results, "title", title)
 
     {:noreply, state}
   end
@@ -149,6 +192,7 @@ defmodule NewsIngester.AACrawler do
         # TODO need better handling here to avoid lockout
         # :timer.sleep(1_000 * NewsIngester.get_config(:a_a_429_wait_time))
         # get_document(id, type)
+        Logger.error("Returned status code 429 for: #{id}")
         nil
 
       String.contains?(content_type, expected_content_type) ->
@@ -158,6 +202,15 @@ defmodule NewsIngester.AACrawler do
         Logger.error("Could not get document: #{id}")
         Logger.error("#{response.body}/#{response.status_code}")
         nil
+    end
+  end
+
+  def get_document_body(id, type) do
+    document = get_document(id, type)
+    if document == nil do
+      nil
+    else
+      document.body
     end
   end
 end
