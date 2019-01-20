@@ -129,4 +129,17 @@ defmodule NewsIngester.AAHelper do
         nil
     end
   end
+
+  @doc """
+  Returns document body or nil
+  """
+  def get_document_body(id, type) do
+    document = NewsIngester.AACrawler.get_document(id, type)
+
+    if document == nil do
+      ""
+    else
+      document.body
+    end
+  end
 end
