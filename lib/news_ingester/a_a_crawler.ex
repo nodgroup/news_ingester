@@ -149,7 +149,6 @@ defmodule NewsIngester.AACrawler do
                     "content_created_at" =>
                       result
                       |> xpath(~x"//contentCreated/text()"S),
-                    "id_at_source" => e
                   }
                 )
               catch
@@ -165,8 +164,9 @@ defmodule NewsIngester.AACrawler do
         end
       )
 
-    results = Map.put(results, "title", title)
-    send_with_graphql(results)
+    results
+    |> Map.merge(%{"title" => title, "ids_at_source" => ids})
+    |> send_with_graphql
 
     {:noreply, state}
   end
