@@ -16,7 +16,7 @@ defmodule NewsIngester.AACrawler do
     results
     |> Enum.each(fn result -> process_results(server, result) end)
 
-    :timer.sleep(1_000 * 60 * NewsIngester.get_config(:a_a_crawl_timer))
+    :timer.sleep(1_000 * NewsIngester.get_config(:a_a_crawl_timer))
     crawl()
   end
 
@@ -59,9 +59,9 @@ defmodule NewsIngester.AACrawler do
     filter = NewsIngester.AAHelper.generate_search_filter(is_test)
     {:ok, response} = HTTPoison.post(url, filter, header)
 
-    {:ok, body} =
+    body =
       response.body
-      |> Poison.Parser.parse()
+      |> Poison.Parser.parse!(%{})
 
     if body["response"]["success"] == false do
       {:reply, :error, state}
@@ -108,58 +108,65 @@ defmodule NewsIngester.AACrawler do
 
           case type do
             "picture" ->
-              get_document_body(e, type)
+              NewsIngester.AAHelper.get_document_body(e, type)
               %{}
 
             "video" ->
-              get_document_body(e, type)
+              NewsIngester.AAHelper.get_document_body(e, type)
               %{}
 
             "text" ->
-              result = get_document_body(e, type)
+              result = NewsIngester.AAHelper.get_document_body(e, type)
 
-              Map.merge(
-                acc,
-                %{
-                  "summary" =>
-                    result
-                    |> xpath(~x"//abstract/text()"S),
-                  "content" =>
-                    result
-                    |> xpath(~x"//body.content/text()"S),
-                  "author" =>
-                    result
-                    |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
-                  "publisher" =>
-                    result
-                    |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
-                  "categories" =>
-                    result
-                    |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
-                  "keywords" =>
-                    result
-                    |> xpath(~x"//keyword/text()"Sl),
-                  "city" =>
-                    result
-                    |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
-                  "country" =>
-                    result
-                    |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
-                  "content_created_at" =>
-                    result
-                    |> xpath(~x"//contentCreated/text()"S),
-                  "id_at_source" => e
-                }
-              )
+              try do
+                Map.merge(
+                  acc,
+                  %{
+                    "summary" =>
+                      result
+                      |> xpath(~x"//abstract/text()"S),
+                    "content" =>
+                      result
+                      |> xpath(~x"//body.content/text()"S),
+                    "author" =>
+                      result
+                      |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
+                    "publisher" =>
+                      result
+                      |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
+                    "categories" =>
+                      result
+                      |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
+                    "keywords" =>
+                      result
+                      |> xpath(~x"//keyword/text()"Sl),
+                    "city" =>
+                      result
+                      |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
+                    "country" =>
+                      result
+                      |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
+                    "content_created_at" =>
+                      result
+                      |> xpath(~x"//contentCreated/text()"S),
+                    "id_at_source" => e
+                  }
+                )
+              catch
+                :exit, _ ->
+                  Logger.error("Unable to parse text for: #{e}")
+                  %{}
+              end
 
             _ ->
               Logger.error("Type not recognized: #{type}")
-              nil
+              %{}
           end
         end
       )
 
-    Map.put(results, "title", title)
+    results = Map.put(results, "title", title)
+    send_with_graphql(results)
 
     {:noreply, state}
   end
@@ -205,13 +212,21 @@ defmodule NewsIngester.AACrawler do
     end
   end
 
-  def get_document_body(id, type) do
-    document = get_document(id, type)
-
-    if document == nil do
-      nil
-    else
-      document.body
-    end
+  @doc """
+  Sends results with graphql
+  """
+  def send_with_graphql(entity) do
+    Neuron.query(
+      """
+      mutation insert_ingested_articles_aa($objects: [ingested_articles_aa_insert_input!]!) {
+        insert_ingested_articles_aa(objects: $objects) {
+          returning {
+            id
+          }
+        }
+      }
+      """,
+      %{"objects" => [entity]}
+    )
   end
 end

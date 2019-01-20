@@ -19,6 +19,14 @@ defmodule NewsIngester.Application do
     opts = [strategy: :one_for_one, name: NewsIngester.Supervisor]
     app = Supervisor.start_link(children, opts)
     NewsIngester.create_table("a_a_crawler", :key, :string)
+    Neuron.Config.set(url: NewsIngester.get_config(:graphql_url))
+
+    Neuron.Config.set(
+      headers: [
+        "X-Hasura-Access-Key": NewsIngester.get_config(:graphql_token)
+      ]
+    )
+
     Task.Supervisor.start_child(Task.Supervisor, fn -> NewsIngester.AACrawler.crawl() end)
     app
   end
