@@ -109,11 +109,11 @@ defmodule NewsIngester.AACrawler do
           case type do
             "picture" ->
               NewsIngester.AAHelper.get_document_body(e, type)
-              %{}
+              acc
 
             "video" ->
               NewsIngester.AAHelper.get_document_body(e, type)
-              %{}
+              acc
 
             "text" ->
               result = NewsIngester.AAHelper.get_document_body(e, type)
@@ -155,12 +155,12 @@ defmodule NewsIngester.AACrawler do
               catch
                 :exit, _ ->
                   Logger.error("Unable to parse text for: #{e}")
-                  %{}
+                  acc
               end
 
             _ ->
               Logger.error("Type not recognized: #{type}")
-              %{}
+              acc
           end
         end
       )
