@@ -33,7 +33,7 @@ mix run --no-halt
 
 with required environment variables
 
-## Running the tests
+### Running the tests
 
 ```
 mix test
