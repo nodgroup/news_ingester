@@ -148,7 +148,7 @@ defmodule NewsIngester.AACrawler do
                       |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
                     "content_created_at" =>
                       result
-                      |> xpath(~x"//contentCreated/text()"S),
+                      |> xpath(~x"//contentCreated/text()"S)
                   }
                 )
               catch
@@ -216,17 +216,22 @@ defmodule NewsIngester.AACrawler do
   Sends results with graphql
   """
   def send_with_graphql(entity) do
-    Neuron.query(
-      """
-      mutation insert_ingested_articles_aa($objects: [ingested_articles_aa_insert_input!]!) {
-        insert_ingested_articles_aa(objects: $objects) {
-          returning {
-            id
+    {status, response} =
+      Neuron.query(
+        """
+        mutation insert_ingested_articles_aa($objects: [ingested_articles_aa_insert_input!]!) {
+          insert_ingested_articles_aa(objects: $objects) {
+            returning {
+              id
+            }
           }
         }
-      }
-      """,
-      %{"objects" => [entity]}
-    )
+        """,
+        %{"objects" => [entity]}
+      )
+
+    if status == :error do
+      Logger.error("Could not post to graphql: #{entity["ids_at_source"]}")
+    end
   end
 end
