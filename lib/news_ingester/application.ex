@@ -23,7 +23,7 @@ defmodule NewsIngester.Application do
 
     Neuron.Config.set(
       headers: [
-        "X-Hasura-Access-Key": NewsIngester.get_config(:graphql_token)
+        "x-hasura-admin-secret": NewsIngester.get_config(:graphql_token)
       ]
     )
 

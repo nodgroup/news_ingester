@@ -139,4 +139,19 @@ defmodule NewsIngester.AAHelper do
       document.body
     end
   end
+
+  @doc """
+
+  """
+  def get_id(result) do
+    id = result["id"]
+    props = String.split(id, ":")
+    type = Enum.at(props, 1)
+
+    if type == "picture" || type == "video" do
+      [[result["group_id"], id]]
+    else
+      [id]
+    end
+  end
 end

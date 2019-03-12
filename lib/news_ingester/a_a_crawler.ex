@@ -72,7 +72,7 @@ defmodule NewsIngester.AACrawler do
           %{},
           fn result, acc ->
             title = String.trim(result["title"])
-            id = [result["id"]]
+            id = NewsIngester.AAHelper.get_id(result)
             value = Map.get(acc, title)
 
             if value == nil do
@@ -103,62 +103,63 @@ defmodule NewsIngester.AACrawler do
       |> Enum.reduce(
         %{},
         fn e, acc ->
-          props = String.split(e, ":")
-          type = Enum.at(props, 1)
-
-          case type do
-            "picture" ->
-              NewsIngester.AAHelper.get_document_body(e, type)
+          case is_list(e) do
+            true ->
+              # NewsIngester.AAHelper.get_document_body(e, type)
               acc
 
-            "video" ->
-              NewsIngester.AAHelper.get_document_body(e, type)
-              acc
+            false ->
+              props = String.split(e, ":")
+              type = Enum.at(props, 1)
 
-            "text" ->
-              result = NewsIngester.AAHelper.get_document_body(e, type)
+              if type == "text" do
+                result = NewsIngester.AAHelper.get_document_body(e, type)
 
-              try do
-                Map.merge(
-                  acc,
-                  %{
-                    "summary" =>
-                      result
-                      |> xpath(~x"//abstract/text()"S),
-                    "content" =>
-                      result
-                      |> xpath(~x"//body.content/text()"S),
-                    "author" =>
-                      result
-                      |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
-                    "publisher" =>
-                      result
-                      |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
-                    "categories" =>
-                      result
-                      |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
-                    "keywords" =>
-                      result
-                      |> xpath(~x"//keyword/text()"Sl),
-                    "city" =>
-                      result
-                      |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
-                    "country" =>
-                      result
-                      |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
-                    "content_created_at" =>
-                      result
-                      |> xpath(~x"//contentCreated/text()"S)
-                  }
-                )
-              catch
-                :exit, _ ->
-                  Logger.error("Unable to parse text for: #{e}")
-                  acc
+                try do
+                  Map.merge(
+                    acc,
+                    %{
+                      "summary" =>
+                        result
+                        |> xpath(~x"//abstract/text()"S),
+                      "content" =>
+                        result
+                        |> xpath(~x"//body.content/text()"S),
+                      "author" =>
+                        result
+                        |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
+                      "publisher" =>
+                        result
+                        |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
+                      "categories" =>
+                        result
+                        |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
+                      "keywords" =>
+                        result
+                        |> xpath(~x"//keyword/text()"Sl),
+                      "city" =>
+                        result
+                        |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
+                      "country" =>
+                        result
+                        |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
+                      "content_created_at" =>
+                        result
+                        |> xpath(~x"//contentCreated/text()"S)
+                    }
+                  )
+                catch
+                  :exit, _ ->
+                    Logger.error("Unable to parse text for: #{e}")
+                    acc
+                end
+              else
+                Logger.error("Type not recognized: #{type}")
+                acc
               end
 
             _ ->
-              Logger.error("Type not recognized: #{type}")
+              Logger.error("Type not recognized: #{e}")
               acc
           end
         end
@@ -214,7 +215,9 @@ defmodule NewsIngester.AACrawler do
   Sends results with graphql
   """
   def post_text(entity) do
-    {status, response} =
+    IO.inspect(entity)
+
+    {status, _response} =
       Neuron.query(
         """
         mutation insert_ingested_articles_aa($objects: [ingested_articles_aa_insert_input!]!) {
