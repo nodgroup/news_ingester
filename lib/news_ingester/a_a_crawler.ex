@@ -215,7 +215,6 @@ defmodule NewsIngester.AACrawler do
   Sends results with graphql
   """
   def post_text(entity) do
-    IO.inspect(entity)
 
     {status, _response} =
       Neuron.query(
@@ -233,7 +232,6 @@ defmodule NewsIngester.AACrawler do
 
     if status == :error do
       Logger.error("Could not post to graphql: #{entity["ids_at_source"]}")
-      IO.inspect(response)
     end
   end
 end
