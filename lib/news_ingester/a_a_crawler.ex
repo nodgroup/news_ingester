@@ -166,7 +166,7 @@ defmodule NewsIngester.AACrawler do
 
     results
     |> Map.merge(%{"title" => title, "ids_at_source" => ids})
-    |> send_with_graphql
+    |> post_text
 
     {:noreply, state}
   end
@@ -197,8 +197,6 @@ defmodule NewsIngester.AACrawler do
     cond do
       response.status_code == 429 ->
         # TODO need better handling here to avoid lockout
-        # :timer.sleep(1_000 * NewsIngester.get_config(:a_a_429_wait_time))
-        # get_document(id, type)
         Logger.error("Returned status code 429 for: #{id}")
         nil
 
@@ -215,7 +213,7 @@ defmodule NewsIngester.AACrawler do
   @doc """
   Sends results with graphql
   """
-  def send_with_graphql(entity) do
+  def post_text(entity) do
     {status, response} =
       Neuron.query(
         """
@@ -232,6 +230,7 @@ defmodule NewsIngester.AACrawler do
 
     if status == :error do
       Logger.error("Could not post to graphql: #{entity["ids_at_source"]}")
+      IO.inspect(response)
     end
   end
 end
