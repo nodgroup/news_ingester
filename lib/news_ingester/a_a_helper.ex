@@ -25,10 +25,7 @@ defmodule NewsIngester.AAHelper do
     else
       # lets start by setting a high limit, since we'll do time based filtering
       # it'll also make sure we don't miss anything when we restart the application after a long idle period
-      multipart = {:multipart}
-      filter = [{"limit", "100000"}]
-
-      filter = filter ++ [{"start_date", get_last_crawled()}]
+      filter = [{"limit", "100000"}, {"start_date", get_last_crawled()}]
 
       ExAws.Dynamo.put_item(
         "a_a_crawler",
@@ -39,7 +36,7 @@ defmodule NewsIngester.AAHelper do
       )
       |> ExAws.request()
 
-      Tuple.append(multipart, filter)
+      {:multipart, filter}
     end
   end
 
