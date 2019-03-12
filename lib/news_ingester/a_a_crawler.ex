@@ -105,62 +105,26 @@ defmodule NewsIngester.AACrawler do
         fn e, acc ->
           case is_list(e) do
             true ->
-              # NewsIngester.AAHelper.get_document_body(e, type)
+              [group, id] = e
+              group_props = String.split(group, ":")
+              group_type = Enum.at(group_props, 1)
+              props = String.split(id, ":")
+              type = Enum.at(props, 1)
+
+              result = NewsIngester.AAHelper.get_document_body(group, group_type)
+
+              metadata = NewsIngester.AAHelper.generate_metadata(result, id, type)
+
+              # TODO: handle videos and images
+              NewsIngester.AAHelper.get_document_body(e, type)
+
               acc
 
             false ->
               props = String.split(e, ":")
               type = Enum.at(props, 1)
 
-              if type == "text" do
-                result = NewsIngester.AAHelper.get_document_body(e, type)
-
-                try do
-                  Map.merge(
-                    acc,
-                    %{
-                      "summary" =>
-                        result
-                        |> xpath(~x"//abstract/text()"S),
-                      "content" =>
-                        result
-                        |> xpath(~x"//body.content/text()"S),
-                      "author" =>
-                        result
-                        |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
-                      "publisher" =>
-                        result
-                        |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
-                      "categories" =>
-                        result
-                        |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
-                      "keywords" =>
-                        result
-                        |> xpath(~x"//keyword/text()"Sl),
-                      "city" =>
-                        result
-                        |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
-                      "country" =>
-                        result
-                        |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
-                      "content_created_at" =>
-                        result
-                        |> xpath(~x"//contentCreated/text()"S)
-                    }
-                  )
-                catch
-                  :exit, _ ->
-                    Logger.error("Unable to parse text for: #{e}")
-                    acc
-                end
-              else
-                Logger.error("Type not recognized: #{type}")
-                acc
-              end
-
-            _ ->
-              Logger.error("Type not recognized: #{e}")
-              acc
+              NewsIngester.AAHelper.generate_text_data(e, type, acc)
           end
         end
       )
@@ -215,7 +179,6 @@ defmodule NewsIngester.AACrawler do
   Sends results with graphql
   """
   def post_text(entity) do
-
     {status, _response} =
       Neuron.query(
         """

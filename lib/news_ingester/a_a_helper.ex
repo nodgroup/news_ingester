@@ -1,5 +1,6 @@
 defmodule NewsIngester.AAHelper do
   require Logger
+  import SweetXml
   @moduledoc false
 
   @doc """
@@ -101,6 +102,12 @@ defmodule NewsIngester.AAHelper do
       "text" ->
         NewsIngester.get_config(:a_a_text_type)
 
+      "picturegroup" ->
+        NewsIngester.get_config(:a_a_text_type)
+
+      "videogroup" ->
+        NewsIngester.get_config(:a_a_text_type)
+
       _ ->
         Logger.error("Could not get quality for: #{type}")
         nil
@@ -119,6 +126,12 @@ defmodule NewsIngester.AAHelper do
         "video"
 
       "text" ->
+        "xml"
+
+      "picturegroup" ->
+        "xml"
+
+      "videogroup" ->
         "xml"
 
       _ ->
@@ -152,6 +165,100 @@ defmodule NewsIngester.AAHelper do
       [[result["group_id"], id]]
     else
       [id]
+    end
+  end
+
+  @doc """
+  Generated metadata from xml for videos and pictures
+  """
+  def generate_metadata(result, id, type) do
+    base_xpath = "//newsItem[@guid=\"#{id}\"]"
+    content_meta_path = "#{base_xpath}/contentMeta"
+
+    metadata = %{
+      "headline" => result |> xpath(~x"#{content_meta_path}/headline/text()"S),
+      "description" => result |> xpath(~x"#{content_meta_path}/description/text()"S),
+      "categories" =>
+        result |> xpath(~x"#{content_meta_path}/subject/name[@xml:lang=\"tr\"]/text()"Sl),
+      "publisher" =>
+        result |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:publisher\"]/@literal"S),
+      "city" => result |> xpath(~x"#{content_meta_path}/located/name[@xml:lang=\"tr\"]/text()"S),
+      "country" =>
+        result |> xpath(~x"#{content_meta_path}/located/broader/name[@xml:lang=\"tr\"]/text()"S),
+      "content_created_at" => result |> xpath(~x"#{content_meta_path}/contentCreated/text()"S),
+      "keywords" => result |> xpath(~x"#{content_meta_path}/keyword/text()"Sl),
+      "copyright_holder" =>
+        result |> xpath(~x"#{base_xpath}/rightsInfo/copyrightHolder/@literal"S)
+    }
+
+    case type do
+      "video" ->
+        Map.merge(metadata, %{
+          "cameraman" =>
+            result
+            |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:cameraman\"]/@literal"S)
+        })
+
+      "picture" ->
+        Map.merge(metadata, %{
+          "photographer" =>
+            result
+            |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:photographer\"]/@literal"S)
+        })
+
+      _ ->
+        metadata
+    end
+  end
+
+  @doc """
+  Gets results and generates data for text news
+  """
+  def generate_text_data(e, type, acc) do
+    if type == "text" do
+      result = get_document_body(e, type)
+
+      try do
+        Map.merge(
+          acc,
+          %{
+            "summary" =>
+              result
+              |> xpath(~x"//abstract/text()"S),
+            "content" =>
+              result
+              |> xpath(~x"//body.content/text()"S),
+            "author" =>
+              result
+              |> xpath(~x"//creator[@qcode=\"AArole:author\"]/@literal"S),
+            "publisher" =>
+              result
+              |> xpath(~x"//creator[@qcode=\"AArole:publisher\"]/@literal"S),
+            "categories" =>
+              result
+              |> xpath(~x"//subject/name[@xml:lang=\"tr\"]/text()"Sl),
+            "keywords" =>
+              result
+              |> xpath(~x"//keyword/text()"Sl),
+            "city" =>
+              result
+              |> xpath(~x"//located/name[@xml:lang=\"tr\"]/text()"S),
+            "country" =>
+              result
+              |> xpath(~x"//broader/name[@xml:lang=\"tr\"]/text()"S),
+            "content_created_at" =>
+              result
+              |> xpath(~x"//contentCreated/text()"S)
+          }
+        )
+      catch
+        :exit, _ ->
+          Logger.error("Unable to parse text for: #{e}")
+          acc
+      end
+    else
+      Logger.error("Type not recognized: #{type}")
+      acc
     end
   end
 end
