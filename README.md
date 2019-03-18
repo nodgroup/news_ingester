@@ -15,12 +15,17 @@ GRAPHQL_URL
 
 GRAPHQL_TOKEN
 
+GOOGLE_APPLICATION_CREDENTIALS
+
+ASSET_MANIPULATOR_ENDPOINT
+
 ## Getting Started
 
 ### Prerequisites
 
 ```
 Elixir 1.7
+Amazon DynamoDB
 ```
 
 ### Running the application

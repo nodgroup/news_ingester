@@ -115,9 +115,32 @@ defmodule NewsIngester.AACrawler do
               metadata = NewsIngester.AAHelper.generate_metadata(result, id, type)
 
               asset = get_document(id, type)
-              send_to_gcs(asset, metadata, dir_path, gcs_conn)
 
-              acc
+              if asset != nil do
+                IO.inspect("doing video")
+                public_url = send_to_gcs(asset, metadata, dir_path, gcs_conn)
+
+                {:ok, manipulator_response} =
+                  HTTPoison.post(
+                    NewsIngester.get_config(:asset_manipulator_endpoint),
+                    Poison.encode!(%{
+                      "type" => NewsIngester.AAHelper.get_type_for_asset_manipulator(type),
+                      "metadata" => metadata,
+                      "url" => public_url
+                    }),
+                    "Content-Type": "application/json"
+                  )
+
+                attachments = Map.get(acc, "attachments")
+
+                if attachments == nil do
+                  Map.merge(acc, %{"attachments" => [manipulator_response.body]})
+                else
+                  Map.merge(acc, %{"attachments" => attachments ++ [manipulator_response.body]})
+                end
+              else
+                acc
+              end
 
             false ->
               props = String.split(e, ":")
@@ -216,7 +239,7 @@ defmodule NewsIngester.AACrawler do
       {:ok, object} =
         GoogleApi.Storage.V1.Api.Objects.storage_objects_insert_simple(
           gcs_conn,
-          "pickle-assets",
+          NewsIngester.get_config(:gcs_storage),
           "multipart",
           NewsIngester.AAHelper.merge_metadata(fileName, metadata),
           Path.join(dir_path, fileName),

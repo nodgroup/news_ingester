@@ -300,4 +300,20 @@ defmodule NewsIngester.AAHelper do
       Map.merge(%{name: fileName}, metadata)
     end
   end
+
+  @doc """
+  Returns type for asset manipulator
+  """
+  def get_type_for_asset_manipulator(type) do
+    case type do
+      "picture" ->
+        "image"
+
+      "video" ->
+        "video"
+
+      _ ->
+        ""
+    end
+  end
 end

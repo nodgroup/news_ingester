@@ -41,7 +41,9 @@ config :news_ingester,
   a_a_video_quality: "web",
   a_a_text_type: "newsml29",
   graphql_url: System.get_env("GRAPHQL_URL"),
-  graphql_token: System.get_env("GRAPHQL_TOKEN")
+  graphql_token: System.get_env("GRAPHQL_TOKEN"),
+  asset_manipulator_endpoint: System.get_env("ASSET_MANIPULATOR_ENDPOINT"),
+  gcs_storage: "pickle-assets"
 
 # for dev and test, edit prod.exs for prod values
 config :ex_aws,
