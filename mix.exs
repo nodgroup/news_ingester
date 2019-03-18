@@ -35,7 +35,13 @@ defmodule NewsIngester.MixProject do
       # :xmerl wrapper for parsing xml
       {:sweet_xml, "~> 0.6.5"},
       # for logging to file
-      {:logger_file_backend, "~> 0.0.10"}
+      {:logger_file_backend, "~> 0.0.10"},
+      # generates tmp dir for cloud storage
+      {:temp, "~> 0.4.7"},
+      # auth library
+      {:goth, "~> 1.0"},
+      # cloud storage api
+      {:google_api_storage, "~> 0.1.0"}
     ]
   end
 

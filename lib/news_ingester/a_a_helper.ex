@@ -123,7 +123,7 @@ defmodule NewsIngester.AAHelper do
         "image"
 
       "video" ->
-        "video"
+        "stream"
 
       "text" ->
         "xml"
@@ -175,39 +175,67 @@ defmodule NewsIngester.AAHelper do
     base_xpath = "//newsItem[@guid=\"#{id}\"]"
     content_meta_path = "#{base_xpath}/contentMeta"
 
-    metadata = %{
-      "headline" => result |> xpath(~x"#{content_meta_path}/headline/text()"S),
-      "description" => result |> xpath(~x"#{content_meta_path}/description/text()"S),
-      "categories" =>
-        result |> xpath(~x"#{content_meta_path}/subject/name[@xml:lang=\"tr\"]/text()"Sl),
-      "publisher" =>
-        result |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:publisher\"]/@literal"S),
-      "city" => result |> xpath(~x"#{content_meta_path}/located/name[@xml:lang=\"tr\"]/text()"S),
-      "country" =>
-        result |> xpath(~x"#{content_meta_path}/located/broader/name[@xml:lang=\"tr\"]/text()"S),
-      "content_created_at" => result |> xpath(~x"#{content_meta_path}/contentCreated/text()"S),
-      "keywords" => result |> xpath(~x"#{content_meta_path}/keyword/text()"Sl),
-      "copyright_holder" =>
-        result |> xpath(~x"#{base_xpath}/rightsInfo/copyrightHolder/@literal"S)
-    }
+    try do
+      metadata = %{
+        "headline" =>
+          result
+          |> xpath(~x"#{content_meta_path}/headline/text()"S),
+        "description" =>
+          result
+          |> xpath(~x"#{content_meta_path}/description/text()"S),
+        "categories" =>
+          result
+          |> xpath(~x"#{content_meta_path}/subject/name[@xml:lang=\"tr\"]/text()"Sl),
+        "publisher" =>
+          result
+          |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:publisher\"]/@literal"S),
+        "city" =>
+          result
+          |> xpath(~x"#{content_meta_path}/located/name[@xml:lang=\"tr\"]/text()"S),
+        "country" =>
+          result
+          |> xpath(~x"#{content_meta_path}/located/broader/name[@xml:lang=\"tr\"]/text()"S),
+        "content_created_at" =>
+          result
+          |> xpath(~x"#{content_meta_path}/contentCreated/text()"S),
+        "keywords" =>
+          result
+          |> xpath(~x"#{content_meta_path}/keyword/text()"Sl),
+        "copyright_holder" =>
+          result
+          |> xpath(~x"#{base_xpath}/rightsInfo/copyrightHolder/@literal"S)
+      }
 
-    case type do
-      "video" ->
-        Map.merge(metadata, %{
-          "cameraman" =>
-            result
-            |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:cameraman\"]/@literal"S)
-        })
+      case type do
+        "video" ->
+          Map.merge(
+            metadata,
+            %{
+              "cameraman" =>
+                result
+                |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:cameraman\"]/@literal"S)
+            }
+          )
 
-      "picture" ->
-        Map.merge(metadata, %{
-          "photographer" =>
-            result
-            |> xpath(~x"#{content_meta_path}/creator[@qcode=\"AArole:photographer\"]/@literal"S)
-        })
+        "picture" ->
+          Map.merge(
+            metadata,
+            %{
+              "photographer" =>
+                result
+                |> xpath(
+                  ~x"#{content_meta_path}/creator[@qcode=\"AArole:photographer\"]/@literal"S
+                )
+            }
+          )
 
-      _ ->
-        metadata
+        _ ->
+          metadata
+      end
+    catch
+      :exit, _ ->
+        Logger.error("Unable to parse metadata for: #{id}")
+        nil
     end
   end
 
@@ -259,6 +287,17 @@ defmodule NewsIngester.AAHelper do
     else
       Logger.error("Type not recognized: #{type}")
       acc
+    end
+  end
+
+  @doc """
+  Merges metadata for gcs
+  """
+  def merge_metadata(fileName, metadata) do
+    if metadata == nil do
+      %{name: fileName}
+    else
+      Map.merge(%{name: fileName}, metadata)
     end
   end
 end

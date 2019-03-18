@@ -1,7 +1,6 @@
 defmodule NewsIngester.AACrawler do
   use GenServer
   require Logger
-  import SweetXml
   @moduledoc false
 
   ## Client API
@@ -9,15 +8,15 @@ defmodule NewsIngester.AACrawler do
   @doc """
   Crawler logic
   """
-  def crawl do
+  def crawl(dir_path, gcs_conn) do
     server = NewsIngester.AACrawler
     results = search(server, false)
 
     results
-    |> Enum.each(fn result -> process_results(server, result) end)
+    |> Enum.each(fn result -> process_results(server, result, dir_path, gcs_conn) end)
 
     :timer.sleep(1_000 * NewsIngester.get_config(:a_a_crawl_timer))
-    crawl()
+    crawl(dir_path, gcs_conn)
   end
 
   @doc """
@@ -37,8 +36,8 @@ defmodule NewsIngester.AACrawler do
   @doc """
   Processes crawler results
   """
-  def process_results(server, element) do
-    GenServer.cast(server, {:process_results, element})
+  def process_results(server, element, dir_path, gcs_conn) do
+    GenServer.cast(server, {:process_results, element, dir_path, gcs_conn})
   end
 
   ## Server Callbacks
@@ -94,7 +93,7 @@ defmodule NewsIngester.AACrawler do
     {:reply, :ok, state}
   end
 
-  def handle_cast({:process_results, element}, state) do
+  def handle_cast({:process_results, element, dir_path, gcs_conn}, state) do
     title = elem(element, 0)
     ids = elem(element, 1)
 
@@ -115,8 +114,8 @@ defmodule NewsIngester.AACrawler do
 
               metadata = NewsIngester.AAHelper.generate_metadata(result, id, type)
 
-              # TODO: handle videos and images
-              NewsIngester.AAHelper.get_document_body(e, type)
+              asset = get_document(id, type)
+              send_to_gcs(asset, metadata, dir_path, gcs_conn)
 
               acc
 
@@ -195,6 +194,38 @@ defmodule NewsIngester.AACrawler do
 
     if status == :error do
       Logger.error("Could not post to graphql: #{entity["ids_at_source"]}")
+    end
+  end
+
+  @doc """
+  Sends files to cloud storage
+  """
+  def send_to_gcs(asset, metadata, dir_path, gcs_conn) do
+    if asset != nil do
+      fileName =
+        asset.headers
+        |> Enum.filter(fn {k, _} -> k == "Content-Disposition" end)
+        |> hd
+        |> elem(1)
+        |> String.split("=")
+        |> Enum.at(1)
+
+      File.write(Path.join(dir_path, fileName), asset.body)
+
+      # save to google cloud storage with public permissions
+      {:ok, object} =
+        GoogleApi.Storage.V1.Api.Objects.storage_objects_insert_simple(
+          gcs_conn,
+          "pickle-assets",
+          "multipart",
+          NewsIngester.AAHelper.merge_metadata(fileName, metadata),
+          Path.join(dir_path, fileName),
+          predefinedAcl: "publicRead"
+        )
+
+      File.rm(Path.join(dir_path, fileName))
+
+      object.mediaLink
     end
   end
 end
