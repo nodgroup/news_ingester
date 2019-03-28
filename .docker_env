@@ -1,0 +1,17 @@
+# AWS access keys
+AWS_ACCESS_KEY_ID=xxx
+AWS_SECRET_ACCESS_KEY=xxx
+
+# AA api credentials
+API_USERNAME=xxx
+API_PASSWORD=xxx
+
+# GQL credentials and endpoint
+GRAPHQL_URL=xxx
+GRAPHQL_TOKEN=xxx
+
+# GCS cloud key path
+GOOGLE_APPLICATION_CREDENTIALS=xxx
+
+# Asset manipulator endpoint
+ASSET_MANIPULATOR_ENDPOINT=xxx
