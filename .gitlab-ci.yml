@@ -7,8 +7,8 @@ stages:
   - release
 
 variables:
-  TEST_IMAGE: registry.gitlab.com/nod/ehaber-other-services/news_ingester:$CI_COMMIT_REF_SLUG
-  RELEASE_IMAGE: registry.gitlab.com/nod/ehaber-other-services/news_ingester:latest
+  TEST_IMAGE: registry.gitlab.com/nod/pickle/news_ingester:$CI_COMMIT_REF_SLUG
+  RELEASE_IMAGE: registry.gitlab.com/nod/pickle/news_ingester:latest
 
 before_script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
