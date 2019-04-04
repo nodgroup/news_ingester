@@ -1,24 +1,24 @@
 # AWS access keys
-AWS_ACCESS_KEY_ID=xxx
-AWS_SECRET_ACCESS_KEY=xxx
-AWS_SCHEME=xxx #"http://"
-AWS_HOST=xxx #"localhost"
-AWS_PORT=xxx #"8000"
-AWS_REGION=xxx #"eu-west-1"
+AWS_ACCESS_KEY_ID="xxx"
+AWS_SECRET_ACCESS_KEY="xxx"
+AWS_SCHEME="xxx" #"http://"
+AWS_HOST="xxx" #"localhost"
+AWS_PORT="xxx" #"8000"
+AWS_REGION="xxx" #"eu-west-1"
 
 # AA api credentials
-API_USERNAME=xxx
-API_PASSWORD=xxx
+API_USERNAME="xxx"
+API_PASSWORD="xxx"
 
 # GQL credentials and endpoint
-GRAPHQL_URL=xxx
-GRAPHQL_TOKEN=xxx
+GRAPHQL_URL="xxx"
+GRAPHQL_TOKEN="xxx"
 
 # GCS cloud key path
-GOOGLE_APPLICATION_CREDENTIALS=xxx
+GOOGLE_APPLICATION_CREDENTIALS="xxx"
 
 # Asset manipulator endpoint
-ASSET_MANIPULATOR_ENDPOINT=xxx
+ASSET_MANIPULATOR_ENDPOINT="xxx"
 
 # pre-defined values
 GCS_STORAGE="pickle-assets"
