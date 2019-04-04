@@ -1,6 +1,10 @@
 # AWS access keys
 AWS_ACCESS_KEY_ID=xxx
 AWS_SECRET_ACCESS_KEY=xxx
+AWS_SCHEME=xxx #"http://"
+AWS_HOST=xxx #"localhost"
+AWS_PORT=xxx #"8000"
+AWS_REGION=xxx #"eu-west-1"
 
 # AA api credentials
 API_USERNAME=xxx
@@ -15,3 +19,8 @@ GOOGLE_APPLICATION_CREDENTIALS=xxx
 
 # Asset manipulator endpoint
 ASSET_MANIPULATOR_ENDPOINT=xxx
+
+# pre-defined values
+GCS_STORAGE="pickle-assets"
+A_A_PICTURE_QUALITY="web"
+A_A_VIDEO_QUALITY="web"

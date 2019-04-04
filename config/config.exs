@@ -37,22 +37,22 @@ config :news_ingester,
   a_a_base_url: "https://api.aa.com.tr/abone/",
   a_a_search_path: "search",
   a_a_document_path: "document",
-  a_a_picture_quality: "web",
-  a_a_video_quality: "web",
+  a_a_picture_quality: System.get_env("A_A_PICTURE_QUALITY"),
+  a_a_video_quality: System.get_env("A_A_VIDEO_QUALITY"),
   a_a_text_type: "newsml29",
   graphql_url: System.get_env("GRAPHQL_URL"),
   graphql_token: System.get_env("GRAPHQL_TOKEN"),
   asset_manipulator_endpoint: System.get_env("ASSET_MANIPULATOR_ENDPOINT"),
-  gcs_storage: "pickle-assets"
+  gcs_storage: System.get_env("GCS_STORAGE")
 
 # for dev and test, edit prod.exs for prod values
 config :ex_aws,
        :dynamodb,
        access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
        secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
-       scheme: "http://",
-       host: "localhost",
-       port: 8000,
-       region: "us-east-1"
+       scheme: System.get_env("AWS_SCHEME"),
+       host: System.get_env("AWS_HOST"),
+       port: System.get_env("AWS_PORT"),
+       region: System.get_env("AWS_REGION")
 
 import_config("#{Mix.env()}.exs")
