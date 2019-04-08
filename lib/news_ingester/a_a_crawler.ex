@@ -117,7 +117,6 @@ defmodule NewsIngester.AACrawler do
               asset = get_document(id, type)
 
               if asset != nil do
-                IO.inspect("doing video")
                 public_url = send_to_gcs(asset, metadata, dir_path, gcs_conn)
 
                 {:ok, manipulator_response} =
