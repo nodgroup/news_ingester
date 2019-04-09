@@ -5,7 +5,7 @@ config :news_ingester,
 
 # tell logger to load a LoggerFileBackend processes
 config :logger,
-  backends: [{LoggerFileBackend, :debug_log}]
+  backends: [{LoggerFileBackend, :debug_log}, :console]
 
 # configuration for the {LoggerFileBackend, :debug_log} backend
 config :logger, :debug_log,
