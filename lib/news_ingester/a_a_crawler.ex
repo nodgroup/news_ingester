@@ -8,7 +8,11 @@ defmodule NewsIngester.AACrawler do
   @doc """
   Crawler logic
   """
-  def crawl(dir_path, gcs_conn) do
+  def crawl(dir_path) do
+    # initializes gcs connection
+    {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
+    gcs_conn = GoogleApi.Storage.V1.Connection.new(token.token)
+
     server = NewsIngester.AACrawler
     results = search(server, false)
 
@@ -16,7 +20,7 @@ defmodule NewsIngester.AACrawler do
     |> Enum.each(fn result -> process_results(server, result, dir_path, gcs_conn) end)
 
     :timer.sleep(1_000 * NewsIngester.get_config(:a_a_crawl_timer))
-    crawl(dir_path, gcs_conn)
+    crawl(dir_path)
   end
 
   @doc """
@@ -224,7 +228,7 @@ defmodule NewsIngester.AACrawler do
   """
   def send_to_gcs(asset, metadata, dir_path, gcs_conn) do
     if asset != nil do
-      fileName =
+      file_name =
         asset.headers
         |> Enum.filter(fn {k, _} -> k == "Content-Disposition" end)
         |> hd
@@ -232,7 +236,7 @@ defmodule NewsIngester.AACrawler do
         |> String.split("=")
         |> Enum.at(1)
 
-      File.write(Path.join(dir_path, fileName), asset.body)
+      File.write(Path.join(dir_path, file_name), asset.body)
 
       # save to google cloud storage with public permissions
       {:ok, object} =
@@ -240,12 +244,12 @@ defmodule NewsIngester.AACrawler do
           gcs_conn,
           NewsIngester.get_config(:gcs_storage),
           "multipart",
-          NewsIngester.AAHelper.merge_metadata(fileName, metadata),
-          Path.join(dir_path, fileName),
+          NewsIngester.AAHelper.merge_metadata(file_name, metadata),
+          Path.join(dir_path, file_name),
           predefinedAcl: "publicRead"
         )
 
-      File.rm(Path.join(dir_path, fileName))
+      File.rm(Path.join(dir_path, file_name))
 
       object.mediaLink
     end

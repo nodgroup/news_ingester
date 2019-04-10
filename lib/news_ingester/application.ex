@@ -30,12 +30,8 @@ defmodule NewsIngester.Application do
     # generated tmp dir for assets
     {:ok, dir_path} = Temp.mkdir()
 
-    # initializes connection
-    {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/cloud-platform")
-    gcs_conn = GoogleApi.Storage.V1.Connection.new(token.token)
-
     Task.Supervisor.start_child(Task.Supervisor, fn ->
-      NewsIngester.AACrawler.crawl(dir_path, gcs_conn)
+      NewsIngester.AACrawler.crawl(dir_path)
     end)
 
     app

@@ -293,11 +293,11 @@ defmodule NewsIngester.AAHelper do
   @doc """
   Merges metadata for gcs
   """
-  def merge_metadata(fileName, metadata) do
+  def merge_metadata(file_name, metadata) do
     if metadata == nil do
-      %{name: fileName}
+      %{name: file_name}
     else
-      Map.merge(%{name: fileName}, metadata)
+      Map.merge(%{name: file_name}, metadata)
     end
   end
 
