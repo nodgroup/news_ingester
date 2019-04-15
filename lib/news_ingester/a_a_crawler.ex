@@ -129,7 +129,8 @@ defmodule NewsIngester.AACrawler do
                     Poison.encode!(%{
                       "type" => NewsIngester.AAHelper.get_type_for_asset_manipulator(type),
                       "metadata" => metadata,
-                      "url" => public_url
+                      "url" => public_url,
+                      "title" => title
                     }),
                     "Content-Type": "application/json"
                   )
