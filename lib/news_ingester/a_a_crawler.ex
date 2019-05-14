@@ -132,7 +132,10 @@ defmodule NewsIngester.AACrawler do
                       "url" => public_url,
                       "title" => title
                     }),
-                    "Content-Type": "application/json"
+                    [
+                      {"Content-Type", "application/json"},
+                      {"Authorization", NewsIngester.get_config(:graphql_token)}
+                    ]
                   )
 
                 attachments = Map.get(acc, "attachments")
